@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BookLink from "@/components/BookLink";
 import ServiceCard from "@/components/ServiceCard";
+import { DEPOSIT_PERCENT, pricing } from "@/lib/booking";
 import { SERVICES, bySlug, money } from "@/lib/services";
-import { SITE } from "@/lib/site";
+import { IS_NATIVE, SITE } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
 
@@ -59,12 +60,13 @@ export default async function ServicePage({ params }: { params: Params }) {
           )}
 
           <p className="note">
-            {s.note ?? "Any deposit is shown at checkout before you confirm."} Booking and payment happen securely in
-            Square.
+            {IS_NATIVE
+              ? `A ${DEPOSIT_PERCENT}% deposit (${money(pricing(s).deposit_cents / 100)}) holds your time. The balance is paid at the studio.`
+              : `${s.note ?? "Any deposit is shown at checkout before you confirm."} Booking and payment happen securely in Square.`}
           </p>
 
           <p className="actions">
-            <BookLink>Book {s.name}</BookLink>
+            <BookLink service={s.slug}>Book {s.name}</BookLink>
             <a href={`sms:${SITE.phoneTel}`} className="btn btn-outline">Ask a question</a>
           </p>
         </div>

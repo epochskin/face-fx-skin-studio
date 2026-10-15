@@ -4,8 +4,45 @@ Demo website for Face FX Skin Studio (New Orleans), built with Next.js (App Rout
 cream `#FAF7F2`, sage `#A8B5A2`, metallic gold from the Epoch logo, black text, Lora headlines, Poppins body.
 
 ## Pages
-`/` home, `/services` menu, `/services/[slug]` one page per service (8), `/about`, `/visit`.
-Booking and checkout stay in Square: every **Book Now** button opens the studio's Square booking page.
+`/` home, `/services` menu, `/services/[slug]` one page per service (8), `/about`, `/visit`, `/privacy`,
+and the booking flow: `/book`, `/booking/success`, `/admin/bookings`.
+
+## Two booking modes
+Set by one variable, `NEXT_PUBLIC_BOOKING_MODE` (rebuild after changing it):
+
+- **`square` (default):** every **Book Now** opens the studio's Square booking page. Nothing else is needed.
+- **`native`:** the on-site flow. Client picks a service, day and time on `/book`, pays a **50% deposit** on Stripe Checkout,
+  and the Stripe webhook saves the booking, emails the client and the owner with a calendar invite, and updates the owner's
+  calendar feed. Needs the setup below.
+
+```
+/book  ->  POST /api/checkout  ->  Stripe Checkout (hosted)
+       ->  POST /api/stripe/webhook (checkout.session.completed)
+       ->  save row in Turso  ->  Resend emails + .ics  ->  /booking/success
+Owner: /admin/bookings  and  /api/calendar.ics?token=...
+```
+
+A booking only exists once Stripe confirms payment. Times already taken are hidden, and if two people pay for the same time
+at once the second is refunded automatically and both sides are emailed.
+
+### Native mode setup
+1. **Turso:** create one database for this site only (`face-fx-bookings`). Copy `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`.
+2. **Stripe:** copy `STRIPE_SECRET_KEY`. After the first deploy add a webhook endpoint
+   `https://<domain>/api/stripe/webhook` for the event `checkout.session.completed` and copy its `STRIPE_WEBHOOK_SECRET`.
+3. **Resend:** copy `RESEND_API_KEY`. Keep `RESEND_FROM_EMAIL=onboarding@resend.dev` until the studio's domain is verified,
+   and set `RESEND_TO_EMAIL` to the owner.
+4. Also set `NEXT_PUBLIC_SITE_URL`, `ADMIN_PASSWORD`, `CALENDAR_FEED_TOKEN` (a long random string) and
+   `NEXT_PUBLIC_BOOKING_MODE=native`. See `.env.example` for every variable. Env changes need a redeploy.
+5. **Calendar:** sign in at `/admin/bookings`, copy the calendar feed link, then subscribe once
+   (Mac: Calendar > File > New Calendar Subscription. iPhone: Settings > Calendar > Accounts > Add Subscribed Calendar).
+
+### Booking rules (edit in `lib/booking.ts`, confirm with the studio)
+Deposit 50% of the price, start times every 30 minutes, 15 minute buffer between appointments, bookable from 12 hours ahead
+up to 90 days out, one appointment at a time. Opening hours come from `HOURS` in `lib/site.ts`, so there is one place to edit them.
+Prices and durations come from `lib/services.ts`; the browser never sends an amount.
+
+### Tests
+`npm run test:booking` runs the rules and every API route against a throwaway local database. Stripe and Resend are stubbed.
 
 ## Run it
 ```bash
@@ -15,8 +52,8 @@ npm run build && npm start
 ```
 
 ## Settings you may want to change
-- **Booking link**: `lib/site.ts` (`BOOKING_URL`), or set `NEXT_PUBLIC_BOOKING_URL`. Use the direct `book.squareup.com` link from
-  Square Dashboard > Online Booking > Channels when you have it.
+- **Square booking link** (square mode): `lib/site.ts` (`BOOKING_URL`), or set `NEXT_PUBLIC_BOOKING_URL`. Use the direct
+  `book.squareup.com` link from Square Dashboard > Online Booking > Channels when you have it.
 - **Services, prices, hours, contact**: `lib/services.ts` and `lib/site.ts`. These are the studio's details only.
 - **Photos**: `public/images/`. They were cropped from Instagram screenshots, so swap in the originals for sharper results.
 

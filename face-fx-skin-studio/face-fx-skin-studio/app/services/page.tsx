@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BookLink from "@/components/BookLink";
 import { CATEGORIES, SERVICES, inCategory, money } from "@/lib/services";
-import { SITE } from "@/lib/site";
+import { IS_NATIVE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Service menu",
@@ -54,8 +54,10 @@ export default function ServicesPage() {
         <div className="wrap narrow center">
           <h2>Not sure what to book?</h2>
           <p className="lead">
-            Text the studio at {SITE.phoneDisplay} and describe your skin goals. You can also add more than one service to
-            the same appointment when you book.
+            Text the studio at {SITE.phoneDisplay} and describe your skin goals.{" "}
+            {IS_NATIVE
+              ? "To combine services in one visit, just ask."
+              : "You can also add more than one service to the same appointment when you book."}
           </p>
           <p className="actions center-actions">
             <BookLink />

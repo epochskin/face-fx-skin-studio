@@ -4,7 +4,8 @@ import BookLink from "@/components/BookLink";
 import HoursTable from "@/components/HoursTable";
 import ServiceCard from "@/components/ServiceCard";
 import { bySlug, money } from "@/lib/services";
-import { DIRECTIONS_URL, MAP_EMBED_URL, SITE } from "@/lib/site";
+import { DEPOSIT_PERCENT } from "@/lib/booking";
+import { DIRECTIONS_URL, IS_NATIVE, MAP_EMBED_URL, SITE } from "@/lib/site";
 
 const FEATURED = ["fall-reset-facial", "hydrafacial-classic", "hydrafacial-platinum", "brazilian-sugar"]
   .map((s) => bySlug(s)!)
@@ -158,16 +159,20 @@ export default function Home() {
           </div>
           <ol className="steps">
             <li>
-              <h3>Choose your services</h3>
-              <p>Pick one treatment or add more to the same appointment.</p>
+              <h3>{IS_NATIVE ? "Choose your service" : "Choose your services"}</h3>
+              <p>{IS_NATIVE ? "Pick the treatment you would like." : "Pick one treatment or add more to the same appointment."}</p>
             </li>
             <li>
               <h3>Pick a time</h3>
               <p>See live availability and choose what fits your day. Times are shown in Central Time.</p>
             </li>
             <li>
-              <h3>Confirm in Square</h3>
-              <p>Checkout happens securely in Square. A card on file is required, and some services take a deposit.</p>
+              <h3>{IS_NATIVE ? "Pay your deposit" : "Confirm in Square"}</h3>
+              <p>
+                {IS_NATIVE
+                  ? `Checkout is secure. A ${DEPOSIT_PERCENT}% deposit holds your time and the balance is paid at the studio.`
+                  : "Checkout happens securely in Square. A card on file is required, and some services take a deposit."}
+              </p>
             </li>
           </ol>
           <p className="center-actions"><BookLink /></p>

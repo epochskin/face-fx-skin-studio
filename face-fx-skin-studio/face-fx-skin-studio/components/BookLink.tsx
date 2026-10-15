@@ -1,13 +1,24 @@
-import { BOOKING_URL } from "@/lib/site";
+import Link from "next/link";
+import { BOOKING_URL, IS_NATIVE } from "@/lib/site";
 
-// Every Book Now on the site goes to the Square booking page. Checkout stays in Square.
+// Every Book Now on the site goes through here.
+// native mode: the on-site booking flow (/book). square mode: the studio's Square page.
 export default function BookLink({
   className = "btn btn-primary",
   children = "Book Now",
+  service,
 }: {
   className?: string;
   children?: React.ReactNode;
+  service?: string; // service slug to preselect in native mode
 }) {
+  if (IS_NATIVE) {
+    return (
+      <Link href={service ? `/book?service=${encodeURIComponent(service)}` : "/book"} className={className}>
+        {children}
+      </Link>
+    );
+  }
   return (
     <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className={className}>
       {children}

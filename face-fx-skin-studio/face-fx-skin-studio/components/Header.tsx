@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BOOKING_URL, NAV, SITE } from "@/lib/site";
+import BookLink from "./BookLink";
+import { NAV, SITE } from "@/lib/site";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -31,9 +32,7 @@ export default function Header() {
               {n.label}
             </Link>
           ))}
-          <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
-            Book Now<span className="sr-only"> (opens the Square booking page in a new tab)</span>
-          </a>
+          <BookLink className="btn btn-secondary btn-sm" />
         </nav>
 
         <button

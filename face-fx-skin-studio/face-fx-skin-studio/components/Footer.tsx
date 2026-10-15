@@ -42,6 +42,7 @@ export default function Footer() {
           {NAV.map((n) => (
             <p key={n.href}><Link href={n.href}>{n.label}</Link></p>
           ))}
+          <p><Link href="/privacy">Privacy notice</Link></p>
         </div>
       </div>
 

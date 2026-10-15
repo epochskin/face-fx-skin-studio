@@ -14,7 +14,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileBar from "@/components/MobileBar";
 
+// Absolute base for social image URLs. Set NEXT_PUBLIC_SITE_URL to the live domain.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "Face FX Skin Studio | Corrective skincare in New Orleans", template: "%s | Face FX Skin Studio" },
   description:
     "HydraFacials, microneedling, sugaring and waxing in a calm studio on Louisiana Ave in New Orleans. Book online in a few taps.",

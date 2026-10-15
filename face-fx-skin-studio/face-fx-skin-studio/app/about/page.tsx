@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import BookLink from "@/components/BookLink";
-import { SITE } from "@/lib/site";
+import { DEPOSIT_PERCENT } from "@/lib/booking";
+import { IS_NATIVE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -18,11 +19,15 @@ const PREP = [
 const FAQ = [
   {
     q: "How does booking work?",
-    a: "Choose your services, pick a time and confirm in Square. A card on file is required to book, and some services take a deposit. You'll see the details before you confirm.",
+    a: IS_NATIVE
+      ? `Choose your service, pick a day and time, then pay a ${DEPOSIT_PERCENT}% deposit by card to hold it. The balance is paid at the studio. You'll get a confirmation email with a calendar invite.`
+      : "Choose your services, pick a time and confirm in Square. A card on file is required to book, and some services take a deposit. You'll see the details before you confirm.",
   },
   {
     q: "Can I book more than one service?",
-    a: "Yes. When you book, Square lets you add more services to the same appointment and shows your total and time.",
+    a: IS_NATIVE
+      ? `Each online booking is one service. To combine services in one visit, text or call ${SITE.phoneDisplay} and the studio will set it up.`
+      : "Yes. When you book, Square lets you add more services to the same appointment and shows your total and time.",
   },
   {
     q: "Where is the studio?",

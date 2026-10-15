@@ -1,0 +1,17 @@
+# dependencies and build output
+node_modules
+.next
+out
+*.tsbuildinfo
+
+# secrets: never commit these (the repo is public)
+.env
+.env.*
+!.env.example
+
+# local test databases
+*.db
+*.db-journal
+
+.DS_Store
+.vercel
