@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import BookingForm from "@/components/BookingForm";
 import { isDemo } from "@/lib/demo";
-import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, pricing, studioToday } from "@/lib/booking";
+import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, openWindow, pricing, studioToday } from "@/lib/booking";
 import Link from "next/link";
 import { SERVICES, SQUARE_MENU, money } from "@/lib/services";
 import { BOOKING_URL, HOURS, SITE } from "@/lib/site";
@@ -23,6 +23,10 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
   const ready = true; // the full flow is always clickable; demo mode just skips payment
 
   const today = studioToday();
+  const days = Array.from({ length: 21 }, (_, i) => {
+    const date = addDays(today, i);
+    return { date, closed: openWindow(date) === null };
+  });
   const chosen = SERVICES.find((x) => x.slug === sp.service);
 
   const header = (
@@ -134,6 +138,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
               price: chosen.price,
               deposit: pricing(chosen).deposit_cents / 100,
             }}
+            days={days}
             minDate={today}
             maxDate={addDays(today, MAX_ADVANCE_DAYS)}
             canceled={sp.canceled === "1"}

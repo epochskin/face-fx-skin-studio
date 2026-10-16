@@ -297,3 +297,29 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 }
 .sq-notice { border: 1px solid var(--border); background: var(--white); padding: 22px; margin-bottom: 26px; }
 .sq-notice p { margin: 0 0 10px; }
+
+/* Booking flow polish: day strip, step titles, deposit line, no empty boxes */
+.book-form { gap: 26px; }
+.book-form .book-step { border: 0; background: transparent; padding: 0; }
+.step-title { display: flex; align-items: center; gap: 12px; font-size: 1.25rem; margin: 0 0 14px; }
+.step-title span { width: 30px; height: 30px; border: 1px solid var(--gold); background: var(--white); display: grid; place-items: center; font-size: .95rem; flex: none; }
+.book-deposit { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; margin: 0; padding: 16px 18px; background: var(--white); border: 1px solid var(--border); }
+.book-deposit span { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mid); }
+.book-deposit strong { font-family: var(--font-head); font-size: 1.6rem; font-weight: 500; }
+.book-deposit em { grid-column: 1 / -1; font-style: normal; font-size: 13px; color: var(--ink-mid); }
+.daystrip { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 -2px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+.day { flex: 0 0 68px; scroll-snap-align: start; display: grid; justify-items: center; gap: 2px; padding: 10px 4px; font: inherit; color: var(--ink); background: var(--white); border: 1px solid var(--border); cursor: pointer; }
+.day small { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mid); }
+.day b { font-family: var(--font-head); font-size: 1.5rem; font-weight: 500; line-height: 1.1; }
+.day:hover:not(:disabled) { border-color: var(--ink); background: var(--gold-highlight); }
+.day:disabled { opacity: .45; cursor: not-allowed; background: transparent; }
+.day.is-on, .day.is-on:hover { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.day.is-on small { color: var(--cream); }
+.more-dates { margin-top: 6px; font-size: 14px; }
+.more-dates summary { cursor: pointer; color: var(--gold-text); text-decoration: underline; padding: 6px 0; }
+.more-dates input { margin-top: 8px; max-width: 100%; min-height: 50px; -webkit-appearance: none; appearance: none; box-sizing: border-box; }
+.book-form .book-grid label input, .book-form textarea { background: var(--white); }
+.slots { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 640px) { .slots { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); } }
+body:has(.book-form) .mobile-bar { display: none; }
+body:has(.book-form) { padding-bottom: 0; }

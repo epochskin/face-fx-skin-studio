@@ -10,12 +10,14 @@ const money = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigi
 
 export default function BookingForm({
   service: selected,
+  days,
   minDate,
   maxDate,
   canceled,
   depositPercent,
 }: {
   service: Opt;
+  days: { date: string; closed: boolean }[];
   minDate: string;
   maxDate: string;
   canceled: boolean;
@@ -90,64 +92,91 @@ export default function BookingForm({
         </p>
       )}
 
-      <p className="book-hint">
-        {depositPercent}% deposit today: <strong>{money(selected.deposit)}</strong>. The remaining{" "}
-        {money(selected.price - selected.deposit)} is paid at the studio.
+      <p className="book-deposit">
+        <span>{depositPercent}% deposit today</span>
+        <strong>{money(selected.deposit)}</strong>
+        <em>Remaining {money(selected.price - selected.deposit)} is paid at the studio.</em>
       </p>
 
-      <fieldset className="book-step">
-        <legend><span>1</span> Pick a day</legend>
-        <label className="sr-only" htmlFor="date">Appointment date</label>
-        <input id="date" type="date" min={minDate} max={maxDate} value={date} onChange={(e) => setDate(e.target.value)} required />
-      </fieldset>
+      <div className="book-step">
+        <h3 className="step-title"><span>1</span> Pick a day</h3>
+        <div className="daystrip" role="radiogroup" aria-label="Appointment day">
+          {days.map((d) => {
+            const dt = new Date(`${d.date}T12:00:00Z`);
+            const f = (o: Intl.DateTimeFormatOptions) => dt.toLocaleDateString("en-US", { ...o, timeZone: "UTC" });
+            return (
+              <button
+                key={d.date}
+                type="button"
+                role="radio"
+                aria-checked={date === d.date}
+                disabled={d.closed}
+                className={date === d.date ? "day is-on" : "day"}
+                onClick={() => setDate(d.date)}
+                aria-label={`${f({ weekday: "long", month: "long", day: "numeric" })}${d.closed ? ", closed" : ""}`}
+              >
+                <small>{f({ weekday: "short" })}</small>
+                <b>{f({ day: "numeric" })}</b>
+                <small>{d.closed ? "Closed" : f({ month: "short" })}</small>
+              </button>
+            );
+          })}
+        </div>
+        <details className="more-dates">
+          <summary>Need a later date?</summary>
+          <input aria-label="Appointment date" type="date" min={minDate} max={maxDate} value={date} onChange={(e) => setDate(e.target.value)} />
+        </details>
+      </div>
 
-      <fieldset className="book-step" disabled={!date}>
-        <legend><span>2</span> Pick a time</legend>
-        <div aria-live="polite" className="slot-area">
-          {loading && <p className="book-hint">Checking the calendar…</p>}
-          {!loading && slots && slots.length === 0 && (
-            <p className="book-hint">
-              {closed
-                ? "The studio is closed that day. Please pick another day."
-                : "No times are open that day for this service. Try another day."}
-            </p>
-          )}
-          {!loading && slots && slots.length > 0 && (
-            <div className="slots" role="radiogroup" aria-label="Available times, Central Time">
-              {slots.map((s) => (
-                <button
-                  key={s.time}
-                  type="button"
-                  role="radio"
-                  aria-checked={time === s.time}
-                  className={time === s.time ? "slot is-on" : "slot"}
-                  onClick={() => setTime(s.time)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
-          {slots && slots.length > 0 && <p className="book-hint">Times are Central Time.</p>}
+      {date && (
+        <div className="book-step">
+          <h3 className="step-title"><span>2</span> Pick a time</h3>
+          <div aria-live="polite" className="slot-area">
+            {loading && <p className="book-hint">Checking the calendar…</p>}
+            {!loading && slots && slots.length === 0 && (
+              <p className="book-hint">
+                {closed ? "The studio is closed that day. Please pick another day." : "No times are open that day for this service. Try another day."}
+              </p>
+            )}
+            {!loading && slots && slots.length > 0 && (
+              <div className="slots" role="radiogroup" aria-label="Available times, Central Time">
+                {slots.map((s) => (
+                  <button
+                    key={s.time}
+                    type="button"
+                    role="radio"
+                    aria-checked={time === s.time}
+                    className={time === s.time ? "slot is-on" : "slot"}
+                    onClick={() => setTime(s.time)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {slots && slots.length > 0 && <p className="book-hint">Times are Central Time.</p>}
+          </div>
         </div>
-      </fieldset>
+      )}
 
-      <fieldset className="book-step" disabled={!time}>
-        <legend><span>3</span> Your details</legend>
-        <div className="book-grid">
-          <label>Full name<input name="name" autoComplete="name" required minLength={2} maxLength={100} /></label>
-          <label>Email<input name="email" type="email" autoComplete="email" required maxLength={120} /></label>
-          <label>Mobile phone<input name="phone" type="tel" autoComplete="tel" required minLength={10} maxLength={30} inputMode="tel" /></label>
-          <label className="book-wide">
-            Anything the studio should know? <span className="muted">(optional)</span>
-            <textarea name="notes" rows={3} maxLength={400} />
-          </label>
+      {time && (
+        <div className="book-step">
+          <h3 className="step-title"><span>3</span> Your details</h3>
+          <div className="book-grid">
+            <label>Full name<input name="name" autoComplete="name" required minLength={2} maxLength={100} /></label>
+            <label>Email<input name="email" type="email" autoComplete="email" required maxLength={120} /></label>
+            <label>Mobile phone<input name="phone" type="tel" autoComplete="tel" required minLength={10} maxLength={30} inputMode="tel" /></label>
+            <label className="book-wide">
+              Anything the studio should know? <span className="muted">(optional)</span>
+              <textarea name="notes" rows={3} maxLength={400} />
+            </label>
+          </div>
+          {/* Honeypot: real visitors never see or fill this. */}
+          <div className="hp" aria-hidden="true">
+            <label>Company<input name="company" tabIndex={-1} autoComplete="off" /></label>
+          </div>
         </div>
-        {/* Honeypot: real visitors never see or fill this. */}
-        <div className="hp" aria-hidden="true">
-          <label>Company<input name="company" tabIndex={-1} autoComplete="off" /></label>
-        </div>
-      </fieldset>
+      )}
 
       {error && <p className="book-error" role="alert">{error}</p>}
 
