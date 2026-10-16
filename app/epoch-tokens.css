@@ -2,7 +2,7 @@
    Import once, globally. Fonts: see references/implementation.md. */
 
 :root {
-  /* Face FX palette: blush #F5D5D5, navy #2C3863, taupe #AAA291, yellow #F9F925 */
+  /* Face FX palette: blush #F5D5D5, navy #2C3863, taupe #AAA291, soft gold #D9B872 */
 
   /* Surfaces (blush) */
   --cream:        #F5D5D5;  /* page background */
@@ -14,14 +14,14 @@
   --sage-dark:    #968E7D;  /* hover / pressed */
   --sage-pale:    #FAE6E6;  /* light blush tint backgrounds */
 
-  /* Accent: taupe for lines/borders/icons, yellow for the main button */
-  --gold-highlight: #F9F925;  /* yellow: chip hover */
-  --gold-light:     #F9F925;
+  /* Accent: taupe for lines/borders/icons, soft metallic gold for the main button */
+  --gold-highlight: #EBD6A6;  /* pale gold: chip + slot hover */
+  --gold-light:     #E6CC93;
   --gold:           #AAA291;  /* thin lines, borders, icons */
   --gold-mid:       #AAA291;
   --gold-deep:      #2C3863;  /* navy: small icons like the FAQ plus */
   --gold-text:      #434F7C;  /* readable navy for small labels + hovers */
-  --gold-metallic:  linear-gradient(#F9F925, #F9F925);  /* yellow, flat */
+  --gold-metallic:  linear-gradient(115deg, #E6CC93 0%, #D3AE68 45%, #E9D3A0 100%);  /* soft gold, subtle sheen */
 
   /* Ink (text) = navy */
   --ink:          #2C3863;  /* headlines + primary text */
@@ -80,7 +80,7 @@ h1 em, h2 em, h3 em { font-style: italic; font-weight: 400; } /* the accent-word
 .btn:active { transform: scale(0.98); }
 .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-/* Primary: yellow. One per view. */
+/* Primary: gold. One per view. */
 .btn-primary { background: var(--gold-metallic); background-size: 160% 100%; color: var(--ink); border-color: var(--ink); }
 .btn-primary:hover { background-position: 100% 0; box-shadow: 0 6px 24px rgba(44,56,99,.28); }
 
