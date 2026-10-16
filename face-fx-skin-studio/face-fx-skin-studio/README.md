@@ -10,10 +10,10 @@ and the booking flow: `/book`, `/booking/success`, `/admin/bookings`.
 ## Two booking modes
 Set by one variable, `NEXT_PUBLIC_BOOKING_MODE` (rebuild after changing it):
 
-- **`square` (default):** every **Book Now** opens the studio's Square booking page. Nothing else is needed.
-- **`native`:** the on-site flow. Client picks a service, day and time on `/book`, pays a **50% deposit** on Stripe Checkout,
+- **`native` (default):** the on-site flow. Client picks a service, day and time on `/book`, pays a **50% deposit** on Stripe Checkout,
   and the Stripe webhook saves the booking, emails the client and the owner with a calendar invite, and updates the owner's
-  calendar feed. Needs the setup below.
+  calendar feed. Needs the setup below. Until the keys are set, `/book` shows a "being set up" message with call and text options.
+- **`square`:** every **Book Now** opens the studio's Square booking page. Nothing else is needed.
 
 ```
 /book  ->  POST /api/checkout  ->  Stripe Checkout (hosted)
@@ -31,8 +31,7 @@ at once the second is refunded automatically and both sides are emailed.
    `https://<domain>/api/stripe/webhook` for the event `checkout.session.completed` and copy its `STRIPE_WEBHOOK_SECRET`.
 3. **Resend:** copy `RESEND_API_KEY`. Keep `RESEND_FROM_EMAIL=onboarding@resend.dev` until the studio's domain is verified,
    and set `RESEND_TO_EMAIL` to the owner.
-4. Also set `NEXT_PUBLIC_SITE_URL`, `ADMIN_PASSWORD`, `CALENDAR_FEED_TOKEN` (a long random string) and
-   `NEXT_PUBLIC_BOOKING_MODE=native`. See `.env.example` for every variable. Env changes need a redeploy.
+4. Also set `NEXT_PUBLIC_SITE_URL`, `ADMIN_PASSWORD` and `CALENDAR_FEED_TOKEN` (a long random string). See `.env.example` for every variable. Env changes need a redeploy.
 5. **Calendar:** sign in at `/admin/bookings`, copy the calendar feed link, then subscribe once
    (Mac: Calendar > File > New Calendar Subscription. iPhone: Settings > Calendar > Accounts > Add Subscribed Calendar).
 

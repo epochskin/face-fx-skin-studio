@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import BookingForm from "@/components/BookingForm";
+import { dbConfigured } from "@/lib/db";
+import { stripeConfigured } from "@/lib/stripe";
 import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, pricing, studioToday } from "@/lib/booking";
 import { CATEGORIES, SERVICES } from "@/lib/services";
-import { SITE } from "@/lib/site";
+import { BOOKING_URL, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Book an appointment",
@@ -17,6 +19,29 @@ type SP = Promise<{ service?: string; canceled?: string }>;
 
 export default async function BookPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
+  const ready =
+    dbConfigured() && stripeConfigured() && Boolean(process.env.STRIPE_WEBHOOK_SECRET && process.env.NEXT_PUBLIC_SITE_URL);
+
+  if (!ready) {
+    return (
+      <section className="section">
+        <div className="wrap narrow center">
+          <p className="eyebrow">Online booking</p>
+          <h1>Booking opens soon</h1>
+          <p className="lead">
+            Online booking is being set up. To book now, text or call {SITE.phoneDisplay} and the studio will find you a time.
+          </p>
+          <p className="actions center-actions">
+            <a href={`sms:${SITE.phoneTel}`} className="btn btn-primary">Text us</a>
+            <a href={`tel:${SITE.phoneTel}`} className="btn btn-outline">Call us</a>
+            <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+              Book on Square<span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
+        </div>
+      </section>
+    );
+  }
   const today = studioToday();
   const services = SERVICES.map((s) => ({
     slug: s.slug,

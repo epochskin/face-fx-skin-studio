@@ -38,8 +38,8 @@ export default function Home() {
               <Image quality={90}
                 src="/images/artist-portrait.jpg"
                 alt="Your skin specialist seated on a mat in a pink Skin Girls tee"
-                width={560}
-                height={750}
+                width={1120}
+                height={1500}
                 sizes="(max-width: 900px) 80vw, 420px"
                 priority
               />
@@ -84,8 +84,8 @@ export default function Home() {
               <Image quality={90}
                 src="/images/lounge.jpg"
                 alt="The Reset Lounge with soft ottomans, a white rug and a blush throw blanket"
-                width={800}
-                height={434}
+                width={1600}
+                height={868}
                 sizes="(max-width: 900px) 92vw, 540px"
               />
             </div>
@@ -111,8 +111,8 @@ export default function Home() {
               <Image quality={90}
                 src="/images/room.jpg"
                 alt="The private treatment room with a treatment bed, mirror and skincare device"
-                width={744}
-                height={544}
+                width={1488}
+                height={1088}
                 sizes="(max-width: 900px) 92vw, 460px"
               />
             </div>

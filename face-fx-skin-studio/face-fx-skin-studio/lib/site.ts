@@ -6,10 +6,9 @@
 export const BOOKING_URL =
   process.env.NEXT_PUBLIC_BOOKING_URL ?? "https://face-fx-skin-studio.square.site/";
 
-// Booking mode. "square" (default) sends every Book Now to the studio's Square page.
-// "native" uses the on-site flow (/book -> Stripe deposit -> confirmation email).
-// Set NEXT_PUBLIC_BOOKING_MODE=native once Turso, Stripe and Resend are configured.
-export const IS_NATIVE = process.env.NEXT_PUBLIC_BOOKING_MODE === "native";
+// Booking mode. Default is the on-site flow (/book -> Stripe deposit -> confirmation email).
+// Set NEXT_PUBLIC_BOOKING_MODE=square to send every Book Now to the studio's Square page instead.
+export const IS_NATIVE = process.env.NEXT_PUBLIC_BOOKING_MODE !== "square";
 
 export const SITE = {
   name: "Face FX Skin Studio",

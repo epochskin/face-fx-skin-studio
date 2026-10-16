@@ -56,8 +56,8 @@ export default function AboutPage() {
               <Image quality={90}
                 src="/images/artist.jpg"
                 alt="Your skin specialist seated on a mat in a pink Skin Girls set"
-                width={640}
-                height={1070}
+                width={1280}
+                height={2136}
                 sizes="(max-width: 900px) 70vw, 360px"
               />
             </div>
@@ -89,15 +89,15 @@ export default function AboutPage() {
           </div>
           <div className="gallery">
             <figure>
-              <Image quality={90} src="/images/room.jpg" alt="The treatment room with a treatment bed, mirror and skincare device" width={744} height={544} sizes="(max-width: 900px) 92vw, 380px" />
+              <Image quality={90} src="/images/room.jpg" alt="The treatment room with a treatment bed, mirror and skincare device" width={1488} height={1088} sizes="(max-width: 900px) 92vw, 380px" />
               <figcaption>The treatment room</figcaption>
             </figure>
             <figure>
-              <Image quality={90} src="/images/lounge.jpg" alt="The Reset Lounge with soft ottomans and a blush blanket" width={800} height={434} sizes="(max-width: 900px) 92vw, 380px" />
+              <Image quality={90} src="/images/lounge.jpg" alt="The Reset Lounge with soft ottomans and a blush blanket" width={1600} height={868} sizes="(max-width: 900px) 92vw, 380px" />
               <figcaption>The Reset Lounge</figcaption>
             </figure>
             <figure>
-              <Image quality={90} src="/images/hall.jpg" alt="The glass entrance hallway to the spa" width={800} height={896} sizes="(max-width: 900px) 92vw, 380px" />
+              <Image quality={90} src="/images/hall.jpg" alt="The glass entrance hallway to the spa" width={1600} height={1774} sizes="(max-width: 900px) 92vw, 380px" />
               <figcaption>The spa entrance</figcaption>
             </figure>
           </div>
