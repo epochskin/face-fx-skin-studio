@@ -41,3 +41,9 @@ Oct 14, 2026. Method: site-audit checklist plus site-security checklist, against
 9. **Logo looks like a draft.** `public/images/logo.png` (and the social share image built from it) has faint repeating "fiverr" preview
    watermarks. Ask the studio for the paid, unwatermarked logo files and replace `logo.png`, `app/icon.png` and the two share images.
 10. No CSP header is set.
+
+## Re-check after the Square-style menu and demo mode (Oct 15)
+- Build passes, typecheck clean, 19 booking tests pass, `npm audit --omit=dev`: 0 vulnerabilities.
+- Demo mode (`lib/demo.ts`) is on only while Stripe, Turso, the webhook secret or the site URL is missing. It never calls Stripe or the database, sends no email, and its success page only echoes values that pass the same date/time/service validation. Rate limiting is skipped in demo because it needs the database.
+- Open 11: the demo success page shows the email typed into the query string; harmless, but it disappears once real keys are set.
+- Open 12: Square menu text in `lib/services.ts` (SQUARE_MENU) was copied from the studio's PDF capture, not re-checked against the live Square page.
