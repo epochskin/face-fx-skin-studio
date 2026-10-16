@@ -3,8 +3,9 @@ import BookingForm from "@/components/BookingForm";
 import { dbConfigured } from "@/lib/db";
 import { stripeConfigured } from "@/lib/stripe";
 import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, pricing, studioToday } from "@/lib/booking";
-import { CATEGORIES, SERVICES } from "@/lib/services";
-import { BOOKING_URL, SITE } from "@/lib/site";
+import Link from "next/link";
+import { SERVICES, SQUARE_MENU, money } from "@/lib/services";
+import { BOOKING_URL, HOURS, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Book an appointment",
@@ -22,54 +23,117 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
   const ready =
     dbConfigured() && stripeConfigured() && Boolean(process.env.STRIPE_WEBHOOK_SECRET && process.env.NEXT_PUBLIC_SITE_URL);
 
-  if (!ready) {
+  const today = studioToday();
+  const chosen = SERVICES.find((x) => x.slug === sp.service);
+
+  const header = (
+    <section className="page-head sq-head">
+      <div className="wrap narrow center">
+        <h1>{SITE.name}</h1>
+        <p className="lead">Corrective skincare specialist located in a health spa.</p>
+        <p className="sq-contact">
+          {SITE.street}, {SITE.cityLine} 70115 &nbsp;•&nbsp; <a href={`tel:${SITE.phoneTel}`}>{SITE.phoneDisplay}</a> &nbsp;•&nbsp;{" "}
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </p>
+      </div>
+    </section>
+  );
+
+  const hours = (
+    <section className="section sq-hours">
+      <div className="wrap narrow">
+        <h2>Location &amp; Hours</h2>
+        <table className="hours-table">
+          <tbody>
+            {HOURS.map((h) => (
+              <tr key={h.day}>
+                <th scope="row">{h.day}</th>
+                <td>{h.hours}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="center">Address: {SITE.street}, {SITE.cityLine} 70115</p>
+      </div>
+    </section>
+  );
+
+  const notice = (
+    <div className="sq-notice center">
+      <p className="eyebrow">Online booking</p>
+      <p>Online booking is being set up. To book now, text or call {SITE.phoneDisplay} and the studio will find you a time.</p>
+      <p className="actions center-actions">
+        <a href={`sms:${SITE.phoneTel}`} className="btn btn-primary">Text us</a>
+        <a href={`tel:${SITE.phoneTel}`} className="btn btn-outline">Call us</a>
+        <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+          Book on Square<span className="sr-only"> (opens in a new tab)</span>
+        </a>
+      </p>
+    </div>
+  );
+
+  if (!chosen || !ready) {
     return (
-      <section className="section">
-        <div className="wrap narrow center">
-          <p className="eyebrow">Online booking</p>
-          <h1>Booking opens soon</h1>
-          <p className="lead">
-            Online booking is being set up. To book now, text or call {SITE.phoneDisplay} and the studio will find you a time.
-          </p>
-          <p className="actions center-actions">
-            <a href={`sms:${SITE.phoneTel}`} className="btn btn-primary">Text us</a>
-            <a href={`tel:${SITE.phoneTel}`} className="btn btn-outline">Call us</a>
-            <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
-              Book on Square<span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          </p>
-        </div>
-      </section>
+      <>
+        {header}
+        <section className="section book-section">
+          <div className="wrap narrow">
+            {sp.canceled === "1" && (
+              <p className="book-alert" role="status">Checkout was canceled and you were not charged. Pick your service to start again.</p>
+            )}
+            {!ready && notice}
+            <h2>Service Menu</h2>
+            <ul className="sq-menu">
+              {SQUARE_MENU.map((m) => {
+                const svc = SERVICES.find((x) => x.slug === m.slug)!;
+                return (
+                  <li key={m.slug} className="sq-item">
+                    <div className="sq-info">
+                      <h3>{svc.name}</h3>
+                      {m.description && <p className="sq-desc">{m.description}</p>}
+                      <p className="sq-dur">{svc.duration}</p>
+                    </div>
+                    <div className="sq-buy">
+                      <p className="price">{money(svc.price)}</p>
+                      {ready && (
+                        <Link href={`/book?service=${svc.slug}`} className="btn btn-primary">
+                          Book<span className="sr-only"> {svc.name}</span>
+                        </Link>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {ready && <p className="book-hint center">A {DEPOSIT_PERCENT}% deposit holds your appointment. The balance is paid at the studio.</p>}
+          </div>
+        </section>
+        {hours}
+      </>
     );
   }
-  const today = studioToday();
-  const services = SERVICES.map((s) => ({
-    slug: s.slug,
-    name: s.name,
-    price: s.price,
-    duration: s.duration,
-    category: s.category,
-    deposit: pricing(s).deposit_cents / 100,
-  }));
-  const initial = services.some((s) => s.slug === sp.service) ? sp.service! : "";
 
+  const menuDesc = SQUARE_MENU.find((m) => m.slug === chosen.slug)?.description ?? "";
   return (
     <>
-      <section className="page-head">
-        <div className="wrap narrow">
-          <h1>Book an appointment</h1>
-          <p className="lead">
-            Choose your treatment and a time that works. A {DEPOSIT_PERCENT}% deposit holds it, and the balance is paid at the
-            studio. Questions first? Text {SITE.phoneDisplay}.
-          </p>
-        </div>
-      </section>
+      {header}
       <section className="section book-section">
         <div className="wrap narrow">
+          <div className="sq-chosen">
+            <div>
+              <h2>{chosen.name}</h2>
+              {menuDesc && <p className="sq-desc">{menuDesc}</p>}
+              <p className="sq-dur">{chosen.duration} · {money(chosen.price)}</p>
+            </div>
+            <Link href="/book" className="btn btn-outline">Change service</Link>
+          </div>
           <BookingForm
-            services={services}
-            categories={CATEGORIES.map((c) => ({ id: c.id, title: c.title }))}
-            initialService={initial}
+            service={{
+              slug: chosen.slug,
+              name: chosen.name,
+              price: chosen.price,
+              deposit: pricing(chosen).deposit_cents / 100,
+            }}
             minDate={today}
             maxDate={addDays(today, MAX_ADVANCE_DAYS)}
             canceled={sp.canceled === "1"}
@@ -77,6 +141,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
           />
         </div>
       </section>
+      {hours}
     </>
   );
 }

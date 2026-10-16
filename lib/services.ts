@@ -138,3 +138,43 @@ export const SERVICES: Service[] = [
 export const bySlug = (slug: string) => SERVICES.find((s) => s.slug === slug);
 export const inCategory = (c: Category) => SERVICES.filter((s) => s.category === c);
 export const money = (n: number) => `$${n.toLocaleString("en-US")}`;
+
+// The Square online-booking menu, copied word for word (order, names, descriptions, durations).
+// The /book menu renders this so the standalone flow matches the Square site exactly.
+// Prices and durations that drive checkout still come from SERVICES above.
+export const SQUARE_MENU: { slug: string; description: string }[] = [
+  { slug: "paramedical-microneedle-facial", description: "" },
+  {
+    slug: "fall-reset-facial",
+    description:
+      "Custom treatment catered to your specific needs. Includes a few levels of exfoliation followed by an intense extraction process (if needed), then a nutrient-dense formula based on your skin analysis, using trusted professional-only lines. Includes hand and arm massage. Luxurious ingredients, visible results & advanced skincare technology.",
+  },
+  {
+    slug: "brazilian-sugar",
+    description: "Sugaring is an ancient technique used to remove body hair with organic sugar. Best option for natural hair removal. Safe and vegan.",
+  },
+  {
+    slug: "brazilian-wax",
+    description:
+      "Hair removal using hot wax crème wax (not hard wax) — closer to a soft wax, with fabric strips used to aid removal. Includes stomach area & butt.",
+  },
+  {
+    slug: "brazilian-wax-hydra-vajacial",
+    description:
+      "Brazilian Wax + Vajacial using the HydraFacial system. Includes steam, extraction & soothing phyto masque. Guaranteed results.",
+  },
+  {
+    slug: "spa-party",
+    description:
+      "For a party of at least 3–5 guests. Includes HydraFacial express, sauna (optional), V-Steam & ionic foot detox. Perfect for bridal parties & birthdays — includes champagne, organic fresh juice, a private aromatherapy relaxation room & a light charcuterie.",
+  },
+  {
+    slug: "hydrafacial-platinum",
+    description:
+      "Includes a lymphatic drainage massage to balance the face, plus 1 targeted booster (Britenol for pigment correction / JLo Beauty booster for prevention).",
+  },
+  {
+    slug: "hydrafacial-classic",
+    description: "Includes a deep cleanse, complete HydraFacial system, 7.5% peel, masque, peptide-dense moisturizer & mineral SPF 50. Extractions included.",
+  },
+];

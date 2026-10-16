@@ -3,29 +3,25 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-type Opt = { slug: string; name: string; price: number; duration: string; deposit: number; category: string };
+type Opt = { slug: string; name: string; price: number; deposit: number };
 type Slot = { time: string; label: string };
 
 const money = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: n % 1 ? 2 : 0 })}`;
 
 export default function BookingForm({
-  services,
-  categories,
-  initialService,
+  service: selected,
   minDate,
   maxDate,
   canceled,
   depositPercent,
 }: {
-  services: Opt[];
-  categories: { id: string; title: string }[];
-  initialService: string;
+  service: Opt;
   minDate: string;
   maxDate: string;
   canceled: boolean;
   depositPercent: number;
 }) {
-  const [service, setService] = useState(initialService);
+  const service = selected.slug;
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [closed, setClosed] = useState(false);
@@ -34,8 +30,6 @@ export default function BookingForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const reqId = useRef(0);
-
-  const selected = services.find((s) => s.slug === service);
 
   // Reload open times whenever the service or day changes.
   useEffect(() => {
@@ -60,7 +54,7 @@ export default function BookingForm({
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!selected || !date || !time) return;
+    if (!date || !time) return;
     setBusy(true);
     setError("");
     const f = new FormData(e.currentTarget);
@@ -96,39 +90,19 @@ export default function BookingForm({
         </p>
       )}
 
-      <fieldset className="book-step">
-        <legend><span>1</span> Choose a service</legend>
-        <label className="sr-only" htmlFor="service">Service</label>
-        <select id="service" value={service} onChange={(e) => setService(e.target.value)} required>
-          <option value="">Select a service</option>
-          {categories.map((c) => (
-            <optgroup key={c.id} label={c.title}>
-              {services
-                .filter((s) => s.category === c.id)
-                .map((s) => (
-                  <option key={s.slug} value={s.slug}>
-                    {s.name} · {s.duration} · {money(s.price)}
-                  </option>
-                ))}
-            </optgroup>
-          ))}
-        </select>
-        {selected && (
-          <p className="book-hint">
-            {depositPercent}% deposit today: <strong>{money(selected.deposit)}</strong>. The remaining{" "}
-            {money(selected.price - selected.deposit)} is paid at the studio.
-          </p>
-        )}
-      </fieldset>
+      <p className="book-hint">
+        {depositPercent}% deposit today: <strong>{money(selected.deposit)}</strong>. The remaining{" "}
+        {money(selected.price - selected.deposit)} is paid at the studio.
+      </p>
 
-      <fieldset className="book-step" disabled={!service}>
-        <legend><span>2</span> Pick a day</legend>
+      <fieldset className="book-step">
+        <legend><span>1</span> Pick a day</legend>
         <label className="sr-only" htmlFor="date">Appointment date</label>
         <input id="date" type="date" min={minDate} max={maxDate} value={date} onChange={(e) => setDate(e.target.value)} required />
       </fieldset>
 
-      <fieldset className="book-step" disabled={!service || !date}>
-        <legend><span>3</span> Pick a time</legend>
+      <fieldset className="book-step" disabled={!date}>
+        <legend><span>2</span> Pick a time</legend>
         <div aria-live="polite" className="slot-area">
           {loading && <p className="book-hint">Checking the calendar…</p>}
           {!loading && slots && slots.length === 0 && (
@@ -159,7 +133,7 @@ export default function BookingForm({
       </fieldset>
 
       <fieldset className="book-step" disabled={!time}>
-        <legend><span>4</span> Your details</legend>
+        <legend><span>3</span> Your details</legend>
         <div className="book-grid">
           <label>Full name<input name="name" autoComplete="name" required minLength={2} maxLength={100} /></label>
           <label>Email<input name="email" type="email" autoComplete="email" required maxLength={120} /></label>
@@ -178,8 +152,8 @@ export default function BookingForm({
       {error && <p className="book-error" role="alert">{error}</p>}
 
       <div className="book-submit">
-        <button type="submit" className="btn btn-primary" disabled={busy || !selected || !date || !time}>
-          {busy ? "Opening checkout…" : selected ? `Pay ${money(selected.deposit)} deposit` : "Pay deposit"}
+        <button type="submit" className="btn btn-primary" disabled={busy || !date || !time}>
+          {busy ? "Opening checkout…" : `Pay ${money(selected.deposit)} deposit`}
         </button>
         <p className="book-hint">
           Secure card payment. By booking you agree to how we use your details in our{" "}
