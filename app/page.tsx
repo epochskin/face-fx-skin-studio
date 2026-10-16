@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import BookLink from "@/components/BookLink";
+import Photo from "@/components/Photo";
 import HoursTable from "@/components/HoursTable";
 import ServiceCard from "@/components/ServiceCard";
 import { bySlug, money } from "@/lib/services";
@@ -35,14 +36,7 @@ export default function Home() {
 
           <div className="hero-art">
             <div className="frame">
-              <Image quality={90}
-                src="/images/artist-portrait.jpg"
-                alt="Your skin specialist seated on a mat in a pink Skin Girls tee"
-                width={1120}
-                height={1500}
-                sizes="(max-width: 900px) 80vw, 420px"
-                priority
-              />
+              <Photo slot="specialist" sizes="(max-width: 900px) 80vw, 420px" priority />
             </div>
             <Image className="seal" src="/images/logo.png" alt="" width={120} height={120} />
           </div>
@@ -81,13 +75,7 @@ export default function Home() {
         <div className="wrap split">
           <div className="split-photo">
             <div className="frame frame-light">
-              <Image quality={90}
-                src="/images/lounge.jpg"
-                alt="The Reset Lounge with soft ottomans, a white rug and a blush throw blanket"
-                width={1600}
-                height={868}
-                sizes="(max-width: 900px) 92vw, 540px"
-              />
+              <Photo slot="lounge" sizes="(max-width: 900px) 92vw, 540px" />
             </div>
           </div>
           <div>
@@ -108,13 +96,7 @@ export default function Home() {
         <div className="wrap split split-reverse">
           <div className="split-photo">
             <div className="frame">
-              <Image quality={90}
-                src="/images/room.jpg"
-                alt="The private treatment room with a treatment bed, mirror and skincare device"
-                width={1488}
-                height={1088}
-                sizes="(max-width: 900px) 92vw, 460px"
-              />
+              <Photo slot="room" sizes="(max-width: 900px) 92vw, 460px" />
             </div>
           </div>
           <div>

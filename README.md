@@ -40,6 +40,11 @@ Deposit 50% of the price, start times every 30 minutes, 15 minute buffer between
 up to 90 days out, one appointment at a time. Opening hours come from `HOURS` in `lib/site.ts`, so there is one place to edit them.
 Prices and durations come from `lib/services.ts`; the browser never sends an amount.
 
+### Square later
+Booking is behind a few small files, so adding the Square API means swapping those rather than rewriting the site: `lib/booking.ts`
+(rules), `app/api/availability` and `app/api/checkout` (what the form calls), and `app/api/stripe/webhook` (what saves a booking).
+Until then, `NEXT_PUBLIC_BOOKING_MODE=square` sends every Book Now to the Square page instead.
+
 ### Tests
 `npm run test:booking` runs the rules and every API route against a throwaway local database. Stripe and Resend are stubbed.
 
@@ -54,7 +59,9 @@ npm run build && npm start
 - **Square booking link** (square mode): `lib/site.ts` (`BOOKING_URL`), or set `NEXT_PUBLIC_BOOKING_URL`. Use the direct
   `book.squareup.com` link from Square Dashboard > Online Booking > Channels when you have it.
 - **Services, prices, hours, contact**: `lib/services.ts` and `lib/site.ts`. These are the studio's details only.
-- **Photos**: `public/images/`. They were cropped from Instagram screenshots, so swap in the originals for sharper results.
+- **Photos**: all photo slots live in `lib/photos.ts`. They show themed "Photo coming soon" placeholders until a file is set.
+  To add one, drop the studio's original file in `public/images/` and set its `src`, `width` and `height` in `lib/photos.ts`
+  (aim for 1600 px or more on the long edge; the earlier ones were Instagram screenshots and looked soft). Logos stay in `public/images/`.
 
 ## This is a demo: hidden from Google
 Search engines are blocked in three places: the `robots` metadata in `app/layout.tsx`, the `X-Robots-Tag` header in

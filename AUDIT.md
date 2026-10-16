@@ -25,11 +25,8 @@ Oct 14, 2026. Method: site-audit checklist plus site-security checklist, against
 1. **Square link is unverified.** `https://face-fx-skin-studio.square.site/` in `lib/site.ts` is a default someone guessed. This
    session could not open it. In the default mode every Book Now depends on it. Open it, or paste the direct
    `book.squareup.com` link from Square Dashboard > Online Booking > Channels.
-2. **Repo layout.** The app is in the repo twice, and the copies differ. `face-fx-skin-studio/` is the older Epoch palette
-   (cream, sage, gold). `face-fx-skin-studio/face-fx-skin-studio/` is current (Face FX blush and navy, icons, social images) and is
-   the one audited here. There is no `package.json` at the repo root, so Vercel will fail with "No Next.js version detected" unless
-   Root Directory is set to `face-fx-skin-studio/face-fx-skin-studio`. Two lockfiles also trigger a Next.js "workspace root"
-   warning. Cleanest fix: make the current folder the repo root and delete the older copy.
+2. **Repo layout: resolved.** The app used to be in the repo twice, three folders deep. The current copy is now the repo root and the old
+   one is deleted, so Vercel needs no Root Directory. If a Root Directory was already set in Vercel for the old layout, clear it.
 3. **Business rules I had to choose** (all in `lib/booking.ts`): 50% deposit on every service (only Fall Reset documents a deposit
    today), 15 min buffer, 12 hour lead time, 90 day window, one appointment at a time, one service per online booking. Confirm with the studio.
 4. **Emails can fail quietly.** If Resend rejects a message the booking is still saved and the error goes to the server log only. Watch
@@ -39,4 +36,8 @@ Oct 14, 2026. Method: site-audit checklist plus site-security checklist, against
 6. **Demo hiding.** The site is noindex in three places (layout, `X-Robots-Tag`, `robots.ts`) on purpose. At launch remove all three,
    add a sitemap and LocalBusiness structured data. The HSTS `preload` flag should only stay once the live domain is final.
 7. **Map embed** uses Google's unofficial `maps?q=...&output=embed` URL. It works today but is not a supported API.
-8. Photos are Instagram crops (per README). No CSP header is set.
+8. **Photos removed on purpose.** They were low-resolution Instagram crops, one showed another spa's signage ("Spa at the Battle House"),
+   and the hero was a photo of a person. All slots now show placeholders; see `lib/photos.ts`. Get original files from the studio.
+9. **Logo looks like a draft.** `public/images/logo.png` (and the social share image built from it) has faint repeating "fiverr" preview
+   watermarks. Ask the studio for the paid, unwatermarked logo files and replace `logo.png`, `app/icon.png` and the two share images.
+10. No CSP header is set.
