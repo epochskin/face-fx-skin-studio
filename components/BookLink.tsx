@@ -14,7 +14,7 @@ export default function BookLink({
 }) {
   if (IS_NATIVE) {
     return (
-      <Link href={service ? `/book?service=${encodeURIComponent(service)}` : "/book"} className={className}>
+      <Link href={service ? `/book?service=${encodeURIComponent(service)}` : "/services"} className={className}>
         {children}
       </Link>
     );

@@ -3,6 +3,7 @@ import BookingForm from "@/components/BookingForm";
 import { isDemo } from "@/lib/demo";
 import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, openWindow, pricing, studioToday } from "@/lib/booking";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SERVICES, SQUARE_MENU, money } from "@/lib/services";
 import { BOOKING_URL, HOURS, SITE } from "@/lib/site";
 
@@ -20,7 +21,6 @@ type SP = Promise<{ service?: string; canceled?: string }>;
 export default async function BookPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const demo = isDemo();
-  const ready = true; // the full flow is always clickable; demo mode just skips payment
 
   const today = studioToday();
   const days = Array.from({ length: 21 }, (_, i) => {
@@ -28,6 +28,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
     return { date, closed: openWindow(date) === null };
   });
   const chosen = SERVICES.find((x) => x.slug === sp.service);
+  if (!chosen) redirect("/services");
 
   const header = (
     <section className="page-head sq-head">
@@ -75,47 +76,6 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
     </div>
   );
 
-  if (!chosen) {
-    return (
-      <>
-        {header}
-        <section className="section book-section">
-          <div className="wrap narrow">
-            {sp.canceled === "1" && (
-              <p className="book-alert" role="status">Checkout was canceled and you were not charged. Pick your service to start again.</p>
-            )}
-            {demo && notice}
-            <h2>Service Menu</h2>
-            <ul className="sq-menu">
-              {SQUARE_MENU.map((m) => {
-                const svc = SERVICES.find((x) => x.slug === m.slug)!;
-                return (
-                  <li key={m.slug} className="sq-item">
-                    <div className="sq-info">
-                      <h3>{svc.name}</h3>
-                      {m.description && <p className="sq-desc">{m.description}</p>}
-                      <p className="sq-dur">{svc.duration}</p>
-                    </div>
-                    <div className="sq-buy">
-                      <p className="price">{money(svc.price)}</p>
-                      {(
-                        <Link href={`/book?service=${svc.slug}`} className="btn btn-primary">
-                          Book<span className="sr-only"> {svc.name}</span>
-                        </Link>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            {<p className="book-hint center">A {DEPOSIT_PERCENT}% deposit holds your appointment. The balance is paid at the studio.</p>}
-          </div>
-        </section>
-        {hours}
-      </>
-    );
-  }
-
   const menuDesc = SQUARE_MENU.find((m) => m.slug === chosen.slug)?.description ?? "";
   return (
     <>
@@ -129,7 +89,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
               {menuDesc && <p className="sq-desc">{menuDesc}</p>}
               <p className="sq-dur">{chosen.duration} · {money(chosen.price)}</p>
             </div>
-            <Link href="/book" className="btn btn-outline">Change service</Link>
+            <Link href="/services" className="btn btn-outline">Change service</Link>
           </div>
           <BookingForm
             service={{

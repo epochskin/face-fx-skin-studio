@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       ],
       payment_intent_data: { description: `Face FX deposit: ${service.name}, ${event_date} ${event_time}` },
       success_url: `${base}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/book?canceled=1`,
+      cancel_url: `${base}/book?service=${service.slug}&canceled=1`,
       // Stripe allows 500 characters per value; everything here is length-capped above.
       metadata: {
         app: "face-fx-booking",
