@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import BookingForm from "@/components/BookingForm";
-import { dbConfigured } from "@/lib/db";
-import { stripeConfigured } from "@/lib/stripe";
+import { isDemo } from "@/lib/demo";
 import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, pricing, studioToday } from "@/lib/booking";
 import Link from "next/link";
 import { SERVICES, SQUARE_MENU, money } from "@/lib/services";
@@ -20,8 +19,8 @@ type SP = Promise<{ service?: string; canceled?: string }>;
 
 export default async function BookPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
-  const ready =
-    dbConfigured() && stripeConfigured() && Boolean(process.env.STRIPE_WEBHOOK_SECRET && process.env.NEXT_PUBLIC_SITE_URL);
+  const demo = isDemo();
+  const ready = true; // the full flow is always clickable; demo mode just skips payment
 
   const today = studioToday();
   const chosen = SERVICES.find((x) => x.slug === sp.service);
@@ -60,8 +59,8 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
 
   const notice = (
     <div className="sq-notice center">
-      <p className="eyebrow">Online booking</p>
-      <p>Online booking is being set up. To book now, text or call {SITE.phoneDisplay} and the studio will find you a time.</p>
+      <p className="eyebrow">Preview</p>
+      <p>This is a working preview. You can click through every step, but no card is charged and nothing is booked yet. To book now, text or call {SITE.phoneDisplay}.</p>
       <p className="actions center-actions">
         <a href={`sms:${SITE.phoneTel}`} className="btn btn-primary">Text us</a>
         <a href={`tel:${SITE.phoneTel}`} className="btn btn-outline">Call us</a>
@@ -72,7 +71,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
     </div>
   );
 
-  if (!chosen || !ready) {
+  if (!chosen) {
     return (
       <>
         {header}
@@ -81,7 +80,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
             {sp.canceled === "1" && (
               <p className="book-alert" role="status">Checkout was canceled and you were not charged. Pick your service to start again.</p>
             )}
-            {!ready && notice}
+            {demo && notice}
             <h2>Service Menu</h2>
             <ul className="sq-menu">
               {SQUARE_MENU.map((m) => {
@@ -95,7 +94,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
                     </div>
                     <div className="sq-buy">
                       <p className="price">{money(svc.price)}</p>
-                      {ready && (
+                      {(
                         <Link href={`/book?service=${svc.slug}`} className="btn btn-primary">
                           Book<span className="sr-only"> {svc.name}</span>
                         </Link>
@@ -105,7 +104,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
                 );
               })}
             </ul>
-            {ready && <p className="book-hint center">A {DEPOSIT_PERCENT}% deposit holds your appointment. The balance is paid at the studio.</p>}
+            {<p className="book-hint center">A {DEPOSIT_PERCENT}% deposit holds your appointment. The balance is paid at the studio.</p>}
           </div>
         </section>
         {hours}
@@ -119,6 +118,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
       {header}
       <section className="section book-section">
         <div className="wrap narrow">
+          {demo && notice}
           <div className="sq-chosen">
             <div>
               <h2>{chosen.name}</h2>

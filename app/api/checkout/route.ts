@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { computeSlots, fmtDate, fmtTime, isDate, isTime, parseDuration, pricing } from "@/lib/booking";
 import { bookedOn } from "@/lib/booking-db";
-import { dbConfigured } from "@/lib/db";
+import { isDemo } from "@/lib/demo";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { bySlug } from "@/lib/services";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
@@ -21,10 +21,10 @@ const bad = (error: string, status = 400) => NextResponse.json({ error }, { stat
 
 export async function POST(req: Request) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
-  if (!dbConfigured() || !stripeConfigured() || !base) return bad("Online booking is not set up yet.", 503);
+  const demo = isDemo();
 
   try {
-    if (!(await rateLimit(`checkout:${clientIp(req)}`, 10, 600))) return bad("Too many requests", 429);
+    if (!demo && !(await rateLimit(`checkout:${clientIp(req)}`, 10, 600))) return bad("Too many requests", 429);
 
     let body: Record<string, unknown>;
     try {
@@ -57,10 +57,16 @@ export async function POST(req: Request) {
 
     // The slot must be genuinely open right now (hours, lead time, existing bookings).
     const duration_min = parseDuration(service.duration);
-    const open = computeSlots(duration_min, event_date, await bookedOn(event_date));
+    const open = computeSlots(duration_min, event_date, demo ? [] : await bookedOn(event_date));
     if (!open.includes(event_time)) return bad("That time is no longer available. Please pick another.", 409);
 
     const { price_cents, deposit_cents } = pricing(service);
+
+    // Demo mode: no keys yet. Walk the customer to a sample confirmation. Nothing is charged or saved.
+    if (demo) {
+      const q = new URLSearchParams({ demo: "1", service: service.slug, date: event_date, time: event_time, email });
+      return NextResponse.json({ url: `/booking/success?${q}` });
+    }
 
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
