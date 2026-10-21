@@ -7,13 +7,15 @@ cream `#FAF7F2`, sage `#A8B5A2`, metallic gold from the Epoch logo, black text, 
 `/` home, `/services` menu, `/services/[slug]` one page per service (8), `/about`, `/visit`, `/privacy`,
 and the booking flow: `/book`, `/booking/success`, `/admin/bookings`.
 
-## Two booking modes
+## Three booking modes
 Set by one variable, `NEXT_PUBLIC_BOOKING_MODE` (rebuild after changing it):
 
 - **`native` (default):** the on-site flow. Client picks a service, day and time on `/book`, pays a **50% deposit** on Stripe Checkout,
   and the Stripe webhook saves the booking, emails the client and the owner with a calendar invite, and updates the owner's
   calendar feed. Needs the setup below. Until the keys are set, `/book` shows a "being set up" message with call and text options.
 - **`square`:** every **Book Now** opens the studio's Square booking page. Nothing else is needed.
+- **`square-api`:** the same on-site flow (`/book`), but open times come from the studio's Square calendar and the booking is created
+  in Square. No card is taken on this site. See "Square API setup" below.
 
 ```
 /book  ->  POST /api/checkout  ->  Stripe Checkout (hosted)
@@ -40,10 +42,25 @@ Deposit 50% of the price, start times every 30 minutes, 15 minute buffer between
 up to 90 days out, one appointment at a time. Opening hours come from `HOURS` in `lib/site.ts`, so there is one place to edit them.
 Prices and durations come from `lib/services.ts`; the browser never sends an amount.
 
-### Square later
+### Square API setup
+Set `NEXT_PUBLIC_BOOKING_MODE=square-api`, `NEXT_PUBLIC_SITE_URL`, `SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID` and
+`SQUARE_ENVIRONMENT` (`sandbox` while testing, `production` to go live), then redeploy.
+
+1. **Requirement:** Square only lets the Bookings API create bookings for a seller on **Appointments Plus or Premium**.
+2. **Token:** Square Developer Dashboard > create an app > Credentials. Use the Sandbox token first, then the Production one with
+   `SQUARE_ENVIRONMENT=production`. Production needs the studio owner's Square login (or an OAuth grant from her).
+3. **Services:** each site service is matched to the Square appointment service **by name** (`lib/services.ts` names were copied
+   from Square). Run `npm run square:check` (with the vars in `.env.local`) to see what matched and what did not.
+4. **Times:** Square decides what is open (its hours, staff, buffers, lead time). The site only hides closed days using `HOURS`.
+5. **Payment:** the site creates the appointment only. It does not take a card or a deposit. Square's card-on-file rule applies on
+   Square's own booking page, not to bookings created through the API.
+6. **Emails:** the site sends none in this mode. Confirmations and reminders come from Square's own settings.
+   Check this in the sandbox/with a test booking before launch.
+
+### Square later (native mode)
 Booking is behind a few small files, so adding the Square API means swapping those rather than rewriting the site: `lib/booking.ts`
 (rules), `app/api/availability` and `app/api/checkout` (what the form calls), and `app/api/stripe/webhook` (what saves a booking).
-Until then, `NEXT_PUBLIC_BOOKING_MODE=square` sends every Book Now to the Square page instead.
+The `square-api` mode above is that swap, done without touching the native files.
 
 ### Tests
 `npm run test:booking` runs the rules and every API route against a throwaway local database. Stripe and Resend are stubbed.

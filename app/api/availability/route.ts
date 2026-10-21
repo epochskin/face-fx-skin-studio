@@ -4,6 +4,8 @@ import { bookedOn } from "@/lib/booking-db";
 import { isDemo } from "@/lib/demo";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { bySlug } from "@/lib/services";
+import { IS_SQUARE_API } from "@/lib/site";
+import { SquareSetupError, squareTimes } from "@/lib/square";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,13 +27,19 @@ export async function GET(req: Request) {
     }
     const duration = parseDuration(service.duration);
     const closed = openWindow(date) === null;
-    const slots = closed ? [] : computeSlots(duration, date, demo ? [] : await bookedOn(date));
+    let slots: string[];
+    if (closed) slots = [];
+    else if (IS_SQUARE_API && !demo) slots = await squareTimes(service, date); // the studio's Square calendar
+    else slots = computeSlots(duration, date, demo ? [] : await bookedOn(date));
     return NextResponse.json(
       { closed, slots: slots.map((t) => ({ time: t, label: fmtTime(t) })) },
       { headers: NO_STORE },
     );
   } catch (err) {
     console.error("availability failed", err);
+    if (err instanceof SquareSetupError) {
+      return NextResponse.json({ error: "Online booking is being set up. Please text or call the studio." }, { status: 503, headers: NO_STORE });
+    }
     return NextResponse.json({ error: "Could not load times" }, { status: 500, headers: NO_STORE });
   }
 }

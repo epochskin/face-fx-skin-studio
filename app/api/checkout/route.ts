@@ -4,6 +4,8 @@ import { bookedOn } from "@/lib/booking-db";
 import { isDemo } from "@/lib/demo";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { bySlug } from "@/lib/services";
+import { IS_SQUARE_API } from "@/lib/site";
+import { BadDetailsError, SlotTakenError, SquareSetupError, bookSlot } from "@/lib/square";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -53,6 +55,19 @@ export async function POST(req: Request) {
       !/^[0-9+()\-.\s]+$/.test(phone)
     ) {
       return bad("Please check your details and try again.");
+    }
+
+    // square-api mode: Square checks the time is open and creates the appointment. No card is taken here.
+    if (IS_SQUARE_API && !demo) {
+      try {
+        const b = await bookSlot({ service, event_date, event_time, name, email, phone, notes });
+        return NextResponse.json({ url: `/booking/success?${new URLSearchParams({ booking: b.id })}` });
+      } catch (err) {
+        if (err instanceof SlotTakenError) return bad("That time is no longer available. Please pick another.", 409);
+        if (err instanceof BadDetailsError) return bad(err.message);
+        if (err instanceof SquareSetupError) return bad("Online booking is being set up. Please text or call the studio.", 503);
+        throw err;
+      }
     }
 
     // The slot must be genuinely open right now (hours, lead time, existing bookings).

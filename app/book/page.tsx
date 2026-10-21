@@ -5,11 +5,11 @@ import { DEPOSIT_PERCENT, MAX_ADVANCE_DAYS, addDays, openWindow, pricing, studio
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SERVICES, SQUARE_MENU, money } from "@/lib/services";
-import { BOOKING_URL, HOURS, SITE } from "@/lib/site";
+import { BOOKING_URL, HOURS, IS_SQUARE_API, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Book an appointment",
-  description: "Choose a service, pick a time and hold it with a deposit.",
+  description: "Choose a service, pick a time and book your appointment.",
   robots: { index: false, follow: false },
 };
 
@@ -103,6 +103,7 @@ export default async function BookPage({ searchParams }: { searchParams: SP }) {
             maxDate={addDays(today, MAX_ADVANCE_DAYS)}
             canceled={sp.canceled === "1"}
             depositPercent={DEPOSIT_PERCENT}
+            squareApi={IS_SQUARE_API}
           />
         </div>
       </section>

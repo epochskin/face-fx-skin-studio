@@ -6,7 +6,7 @@ import HoursTable from "@/components/HoursTable";
 import ServiceCard from "@/components/ServiceCard";
 import { bySlug, money } from "@/lib/services";
 import { DEPOSIT_PERCENT } from "@/lib/booking";
-import { DIRECTIONS_URL, IS_NATIVE, MAP_EMBED_URL, SITE } from "@/lib/site";
+import { DIRECTIONS_URL, IS_NATIVE, IS_SQUARE_API, MAP_EMBED_URL, SITE, TAKES_DEPOSIT } from "@/lib/site";
 
 const FEATURED = ["fall-reset-facial", "hydrafacial-classic", "hydrafacial-platinum", "brazilian-sugar"]
   .map((s) => bySlug(s)!)
@@ -149,9 +149,11 @@ export default function Home() {
               <p>See live availability and choose what fits your day. Times are shown in Central Time.</p>
             </li>
             <li>
-              <h3>{IS_NATIVE ? "Pay your deposit" : "Confirm in Square"}</h3>
+              <h3>{IS_SQUARE_API ? "Confirm your booking" : IS_NATIVE ? "Pay your deposit" : "Confirm in Square"}</h3>
               <p>
-                {IS_NATIVE
+                {IS_SQUARE_API
+                  ? "Your appointment goes straight onto the studio's calendar and you see your confirmation right away."
+                  : TAKES_DEPOSIT
                   ? `Checkout is secure. A ${DEPOSIT_PERCENT}% deposit holds your time and the balance is paid at the studio.`
                   : "Checkout happens securely in Square. A card on file is required, and some services take a deposit."}
               </p>

@@ -5,12 +5,14 @@ import { SITE } from "@/lib/site";
 import { bySlug } from "@/lib/services";
 import { isDate, isTime } from "@/lib/booking";
 import { isDemo } from "@/lib/demo";
+import { IS_SQUARE_API } from "@/lib/site";
+import { describeBooking } from "@/lib/square";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 
 export const metadata: Metadata = { title: "Booking received", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-type SP = Promise<{ session_id?: string; demo?: string; service?: string; date?: string; time?: string; email?: string }>;
+type SP = Promise<{ booking?: string; session_id?: string; demo?: string; service?: string; date?: string; time?: string; email?: string }>;
 
 // Shows details only for a real, paid session of ours. The confirmation email and
 // the saved booking come from the Stripe webhook, not from this page.
@@ -26,6 +28,12 @@ async function lookup(id: string | undefined) {
   }
 }
 
+// square-api mode: confirm against Square itself, and show no personal details.
+async function lookupSquare(id: string | undefined) {
+  const d = id ? await describeBooking(id) : null;
+  return d ? { ...d, email: "" } : null;
+}
+
 export default async function SuccessPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const svc = bySlug(sp.service ?? "");
@@ -33,16 +41,16 @@ export default async function SuccessPage({ searchParams }: { searchParams: SP }
     isDemo() && sp.demo === "1" && svc && isDate(sp.date ?? "") && isTime(sp.time ?? "")
       ? { service: svc.name, date: sp.date!, time: sp.time!, email: (sp.email ?? "").slice(0, 120) }
       : null;
-  const b = demoView ?? (await lookup(sp.session_id));
+  const b = demoView ?? (IS_SQUARE_API ? await lookupSquare(sp.booking) : await lookup(sp.session_id));
   return (
     <section className="section">
       <div className="wrap narrow center">
         {demoView && (
           <p className="book-alert" role="status">
-            Demo only: no card was charged, nothing was saved and no email was sent. Real bookings turn on once Stripe is connected.
+            Demo only: no card was charged, nothing was saved and no email was sent. Real bookings turn on once {IS_SQUARE_API ? "Square" : "Stripe"} is connected.
           </p>
         )}
-        <p className="eyebrow">Deposit received</p>
+        <p className="eyebrow">{IS_SQUARE_API ? "Booking confirmed" : "Deposit received"}</p>
         <h1>You&apos;re all set</h1>
         {b ? (
           <>
@@ -51,10 +59,16 @@ export default async function SuccessPage({ searchParams }: { searchParams: SP }
               <br />
               {fmtDate(b.date)} at {fmtTime(b.time)}
             </p>
-            <p className="lead">A confirmation with a calendar invite is on its way to {b.email}.</p>
+            <p className="lead">
+              {IS_SQUARE_API
+                ? "Your appointment is on the studio's calendar."
+                : `A confirmation with a calendar invite is on its way to ${b.email}.`}
+            </p>
           </>
         ) : (
-          <p className="lead">Thank you. A confirmation email with your appointment details will arrive shortly.</p>
+          <p className="lead">
+            {IS_SQUARE_API ? "Thank you. Your appointment request has been sent to the studio." : "Thank you. A confirmation email with your appointment details will arrive shortly."}
+          </p>
         )}
         <p className="muted">
           {SITE.street}, {SITE.cityLine}, inside {SITE.locatedInside}. Need to change something? Text or call{" "}

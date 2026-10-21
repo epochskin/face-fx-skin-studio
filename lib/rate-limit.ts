@@ -1,8 +1,20 @@
-import { getDb, initDb } from "./db";
+import { dbConfigured, getDb, initDb } from "./db";
+
+// No database (square-api mode): per-instance counters. Best effort on serverless, but it still blunts spam.
+const mem = new Map<string, { w: number; c: number }>();
+function memoryLimit(key: string, limit: number, windowSecs: number): boolean {
+  const w = Math.floor(Math.floor(Date.now() / 1000) / windowSecs);
+  const e = mem.get(key);
+  const c = e && e.w === w ? e.c + 1 : 1;
+  mem.set(key, { w, c });
+  if (mem.size > 5000) for (const [k, v] of mem) if (v.w < w) mem.delete(k);
+  return c <= limit;
+}
 
 // Fixed-window limiter backed by the site's Turso DB (in-memory limiters do not
 // survive serverless). Returns true when the request is allowed.
 export async function rateLimit(key: string, limit: number, windowSecs: number): Promise<boolean> {
+  if (!dbConfigured()) return memoryLimit(key, limit, windowSecs);
   await initDb();
   const db = getDb();
   const nowSecs = Math.floor(Date.now() / 1000);

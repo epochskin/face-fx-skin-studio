@@ -5,7 +5,7 @@ import BookLink from "@/components/BookLink";
 import ServiceCard from "@/components/ServiceCard";
 import { DEPOSIT_PERCENT, pricing } from "@/lib/booking";
 import { SERVICES, bySlug, money } from "@/lib/services";
-import { IS_NATIVE, SITE } from "@/lib/site";
+import { IS_NATIVE, IS_SQUARE_API, SITE, TAKES_DEPOSIT } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
 
@@ -60,7 +60,9 @@ export default async function ServicePage({ params }: { params: Params }) {
           )}
 
           <p className="note">
-            {IS_NATIVE
+            {IS_SQUARE_API
+              ? "Your appointment goes straight onto the studio's Square calendar."
+              : TAKES_DEPOSIT
               ? `A ${DEPOSIT_PERCENT}% deposit (${money(pricing(s).deposit_cents / 100)}) holds your time. The balance is paid at the studio.`
               : `${s.note ?? "Any deposit is shown at checkout before you confirm."} Booking and payment happen securely in Square.`}
           </p>

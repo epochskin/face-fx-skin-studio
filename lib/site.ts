@@ -8,7 +8,11 @@ export const BOOKING_URL =
 
 // Booking mode. Default is the on-site flow (/book -> Stripe deposit -> confirmation email).
 // Set NEXT_PUBLIC_BOOKING_MODE=square to send every Book Now to the studio's Square page instead.
-export const IS_NATIVE = process.env.NEXT_PUBLIC_BOOKING_MODE !== "square";
+// Set NEXT_PUBLIC_BOOKING_MODE=square-api to keep the on-site flow but book straight into the studio's Square calendar.
+export const BOOKING_MODE = process.env.NEXT_PUBLIC_BOOKING_MODE ?? "native";
+export const IS_NATIVE = BOOKING_MODE !== "square"; // on-site flow (native or square-api)
+export const IS_SQUARE_API = BOOKING_MODE === "square-api";
+export const TAKES_DEPOSIT = IS_NATIVE && !IS_SQUARE_API; // Stripe deposit only in native mode
 
 export const SITE = {
   name: "Face FX Skin Studio",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import BookLink from "@/components/BookLink";
 import Photo from "@/components/Photo";
 import { DEPOSIT_PERCENT } from "@/lib/booking";
-import { IS_NATIVE, SITE } from "@/lib/site";
+import { IS_NATIVE, IS_SQUARE_API, SITE, TAKES_DEPOSIT } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -19,7 +19,9 @@ const PREP = [
 const FAQ = [
   {
     q: "How does booking work?",
-    a: IS_NATIVE
+    a: IS_SQUARE_API
+      ? `Choose your service, pick a day and time and enter your details. Your appointment goes straight onto the studio's calendar. Need to change something? Text or call ${SITE.phoneDisplay}.`
+      : TAKES_DEPOSIT
       ? `Choose your service, pick a day and time, then pay a ${DEPOSIT_PERCENT}% deposit by card to hold it. The balance is paid at the studio. You'll get a confirmation email with a calendar invite.`
       : "Choose your services, pick a time and confirm in Square. A card on file is required to book, and some services take a deposit. You'll see the details before you confirm.",
   },

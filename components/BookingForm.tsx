@@ -15,6 +15,7 @@ export default function BookingForm({
   maxDate,
   canceled,
   depositPercent,
+  squareApi = false,
 }: {
   service: Opt;
   days: { date: string; closed: boolean }[];
@@ -22,6 +23,7 @@ export default function BookingForm({
   maxDate: string;
   canceled: boolean;
   depositPercent: number;
+  squareApi?: boolean; // books straight into Square: no deposit step on this site
 }) {
   const service = selected.slug;
   const [date, setDate] = useState("");
@@ -92,11 +94,13 @@ export default function BookingForm({
         </p>
       )}
 
-      <p className="book-deposit">
-        <span>{depositPercent}% deposit today</span>
-        <strong>{money(selected.deposit)}</strong>
-        <em>Remaining {money(selected.price - selected.deposit)} is paid at the studio.</em>
-      </p>
+      {!squareApi && (
+        <p className="book-deposit">
+          <span>{depositPercent}% deposit today</span>
+          <strong>{money(selected.deposit)}</strong>
+          <em>Remaining {money(selected.price - selected.deposit)} is paid at the studio.</em>
+        </p>
+      )}
 
       <div className="book-step">
         <h3 className="step-title"><span>1</span> Pick a day</h3>
@@ -182,10 +186,10 @@ export default function BookingForm({
 
       <div className="book-submit">
         <button type="submit" className="btn btn-primary" disabled={busy || !date || !time}>
-          {busy ? "Opening checkout…" : `Pay ${money(selected.deposit)} deposit`}
+          {busy ? (squareApi ? "Booking…" : "Opening checkout…") : squareApi ? "Book appointment" : `Pay ${money(selected.deposit)} deposit`}
         </button>
         <p className="book-hint">
-          Secure card payment. By booking you agree to how we use your details in our{" "}
+          {squareApi ? null : "Secure card payment. "}By booking you agree to how we use your details in our{" "}
           <Link href="/privacy">privacy notice</Link>.
         </p>
       </div>

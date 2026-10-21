@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:booking": "tsx scripts/test-booking.ts"
+    "test:booking": "tsx scripts/test-booking.ts",
+    "test:square": "tsx scripts/test-square.ts",
+    "square:check": "tsx --env-file=.env.local scripts/square-check.ts"
   },
   "dependencies": {
     "@fontsource/lora": "^5.2.0",
