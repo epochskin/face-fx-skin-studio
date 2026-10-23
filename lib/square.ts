@@ -6,15 +6,18 @@ import { createHash } from "node:crypto";
 import { MAX_ADVANCE_DAYS, STUDIO_TZ, addDays, parseDuration, studioLocalToUtcMs, studioToday } from "./booking";
 import { SERVICES, type Service } from "./services";
 
-const locationId = () => process.env.SQUARE_LOCATION_ID ?? "";
+// Pasted values often carry a trailing space/newline or quotes, which Square answers with a 401. Clean them.
+const clean = (v: string | undefined) => (v ?? "").trim().replace(/^["']|["']$/g, "").trim();
+const accessToken = () => clean(process.env.SQUARE_ACCESS_TOKEN);
+const locationId = () => clean(process.env.SQUARE_LOCATION_ID);
+const isProduction = () => clean(process.env.SQUARE_ENVIRONMENT).toLowerCase() === "production";
 
 export function squareConfigured(): boolean {
-  return Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID);
+  return Boolean(accessToken() && locationId());
 }
 
 // Sandbox unless SQUARE_ENVIRONMENT=production, so a missing value can never create real bookings.
-const baseUrl = () =>
-  process.env.SQUARE_ENVIRONMENT === "production" ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
+const baseUrl = () => (isProduction() ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com");
 const apiVersion = () => process.env.SQUARE_API_VERSION || "2025-10-16";
 
 export class SquareError extends Error {
@@ -36,7 +39,7 @@ async function sq<T>(method: "GET" | "POST", path: string, body?: unknown): Prom
   const res = await fetch(baseUrl() + path, {
     method,
     headers: {
-      Authorization: `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${accessToken()}`,
       "Square-Version": apiVersion(),
       "Content-Type": "application/json",
     },
@@ -50,7 +53,14 @@ async function sq<T>(method: "GET" | "POST", path: string, body?: unknown): Prom
   } catch {
     /* non-JSON error page */
   }
-  if (!res.ok) throw new SquareError(res.status, JSON.stringify(json.errors ?? text).slice(0, 400));
+  if (!res.ok) {
+    const detail = JSON.stringify(json.errors ?? text).slice(0, 400);
+    // 401/403 = the token, its environment (sandbox vs production) or the plan is wrong: a setup problem, not the customer's.
+    if (res.status === 401 || res.status === 403) {
+      throw new SquareSetupError(`Square ${res.status} on ${baseUrl()}: ${detail} (check SQUARE_ACCESS_TOKEN matches SQUARE_ENVIRONMENT=${isProduction() ? "production" : "sandbox"})`);
+    }
+    throw new SquareError(res.status, detail);
+  }
   return json as T;
 }
 
@@ -292,7 +302,7 @@ export async function squareStatus() {
   const loc = await sq<{ location: { id: string; name?: string; status?: string } }>("GET", `/v2/locations/${locationId()}`);
   const cat = await catalog();
   return {
-    environment: process.env.SQUARE_ENVIRONMENT === "production" ? "production" : "sandbox",
+    environment: isProduction() ? "production" : "sandbox",
     location: loc.location,
     mapped: SERVICES.filter((s) => cat.bySlug.has(s.slug)).map((s) => ({ name: s.name, ...cat.bySlug.get(s.slug)! })),
     unmatched: cat.unmatched,

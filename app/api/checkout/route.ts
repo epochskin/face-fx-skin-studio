@@ -65,7 +65,10 @@ export async function POST(req: Request) {
       } catch (err) {
         if (err instanceof SlotTakenError) return bad("That time is no longer available. Please pick another.", 409);
         if (err instanceof BadDetailsError) return bad(err.message);
-        if (err instanceof SquareSetupError) return bad("Online booking is being set up. Please text or call the studio.", 503);
+        if (err instanceof SquareSetupError) {
+          console.error("checkout: Square setup problem", err.message);
+          return bad("Online booking is being set up. Please text or call the studio.", 503);
+        }
         throw err;
       }
     }

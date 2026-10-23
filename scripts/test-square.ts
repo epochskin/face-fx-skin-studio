@@ -210,9 +210,35 @@ async function main() {
     handler = (c) => (c.path === "/v2/bookings" ? { status: 400, json: { errors: [{ code: "BAD_REQUEST" }] } } : happy(c));
     assert.equal((await checkout.POST(post("/api/checkout", form()))).status, 409);
   });
-  await t("bad token (401) is a server error, not 'time taken'", async () => {
+  await t("bad token (401) is a 'being set up' error, never 'time taken'", async () => {
     handler = (c) => (c.path === "/v2/bookings" ? { status: 401, json: { errors: [{ code: "UNAUTHORIZED" }] } } : happy(c));
-    assert.equal((await checkout.POST(post("/api/checkout", form()))).status, 500);
+    const r = await checkout.POST(post("/api/checkout", form()));
+    assert.equal(r.status, 503);
+    assert.match((await r.json()).error, /being set up/);
+  });
+  await t("401 while loading times -> 503 with the same friendly message", async () => {
+    S.resetSquareCache();
+    handler = () => ({ status: 401, json: { errors: [{ code: "UNAUTHORIZED" }] } });
+    const r = await avail.GET(new Request(`https://example.test/api/availability?service=${svc.slug}&date=${date}`));
+    assert.equal(r.status, 503);
+    assert.match((await r.json()).error, /being set up/);
+  });
+  await t("pasted spaces, quotes and capital letters in the Square settings are tolerated", async () => {
+    S.resetSquareCache();
+    const keep = { ...process.env };
+    process.env.SQUARE_ACCESS_TOKEN = '  "test-token"\n';
+    process.env.SQUARE_LOCATION_ID = " LOC1 ";
+    process.env.SQUARE_ENVIRONMENT = " Production ";
+    calls = [];
+    handler = (c) => base(c) ?? { json: { availabilities: [] } };
+    await S.squareTimes(svc, date);
+    assert.ok(calls.length > 0 && calls.every((c) => c.host === "connect.squareup.com"));
+    assert.equal(calls[0].headers["Authorization"], "Bearer test-token");
+    assert.equal(calls.find((c) => c.path.includes("availability/search"))!.body.query.filter.location_id, "LOC1");
+    process.env.SQUARE_ACCESS_TOKEN = keep.SQUARE_ACCESS_TOKEN;
+    process.env.SQUARE_LOCATION_ID = keep.SQUARE_LOCATION_ID;
+    process.env.SQUARE_ENVIRONMENT = keep.SQUARE_ENVIRONMENT;
+    S.resetSquareCache();
   });
   await t("Square rejects the customer details (400) -> 400 with a clear message", async () => {
     handler = (c) => (c.path === "/v2/customers" ? { status: 400, json: { errors: [{ code: "INVALID_PHONE" }] } } : happy(c));
